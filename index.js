@@ -1,9 +1,9 @@
-function createEventHandles(play_id, stop_id, rust_function) {
+function createEventHandles(play_id, stop_id, rust_function, noiseType) {
     let handle = null;
  
     const play_button = document.getElementById(play_id);
     play_button.addEventListener("click", () => {
-        handle = rust_function();
+        handle = rust_function(noiseType);
     });
  
     const stop_button = document.getElementById(stop_id);
@@ -16,8 +16,9 @@ function createEventHandles(play_id, stop_id, rust_function) {
 }
 
 import("./pkg").catch(console.error).then(rust_module=>{
-    createEventHandles('play-beep', 'stop-beep', rust_module.beep);
-    createEventHandles('play-white-noise', 'stop-white-noise', rust_module.white_noise);
+    // createEventHandles('play-beep', 'stop-beep', rust_module.beep);
+    createEventHandles('play-white-noise', 'stop-white-noise', rust_module.play_noise, 'White');
+    createEventHandles('play-pink-noise', 'stop-pink-noise', rust_module.play_noise, 'Pink');
     // let beep_handle = null;
     // const play_beep_button = document.getElementById("play-beep");
     // play_beep_button.addEventListener("click", event => {

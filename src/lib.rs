@@ -7,6 +7,13 @@ use crate::audio_processor::AudioProcessor;
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
+// A macro to provide `println!(..)`-style syntax for `console.log` logging.
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
+}
+
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
 // allocator.
 //
@@ -32,6 +39,20 @@ use cpal::Stream;
 #[wasm_bindgen]
 pub struct Handle(Stream);
 
+#[derive(Debug, Copy, Clone)]
+enum NoiseType {
+    White,
+    Pink,
+}
+
+fn convert_string_to_noise_type(noise_type: String) -> NoiseType {
+    match noise_type.as_str() {
+        "White" => NoiseType::White,
+        "Pink" => NoiseType::Pink,
+        _ => panic!("Unkown NoiseType {}", noise_type),
+    }
+}
+
 fn get_config() -> (cpal::Device, cpal::SupportedStreamConfig) {
     let host = cpal::default_host();
     let device = host
@@ -42,32 +63,21 @@ fn get_config() -> (cpal::Device, cpal::SupportedStreamConfig) {
 }
 
 #[wasm_bindgen]
-pub fn beep() -> Handle {
-    let host = cpal::default_host();
-    let device = host
-        .default_output_device()
-        .expect("failed to find a default output device");
-    let config = device.default_output_config().unwrap();
+pub fn play_noise(noise_type: String) -> Handle {
+    let noise_type = convert_string_to_noise_type(noise_type);
 
-    Handle(match config.sample_format() {
-        cpal::SampleFormat::F32 => run::<f32>(&device, &config.into()),
-        cpal::SampleFormat::I16 => run::<i16>(&device, &config.into()),
-        cpal::SampleFormat::U16 => run::<u16>(&device, &config.into()),
-    })
-}
+    // log!("playing noise type: {:?}", noise_type);
 
-#[wasm_bindgen]
-pub fn white_noise() -> Handle {
     let (device, config) = get_config();
 
     Handle(match config.sample_format() {
-        cpal::SampleFormat::F32 => run::<f32>(&device, &config.into()),
-        cpal::SampleFormat::I16 => run::<i16>(&device, &config.into()),
-        cpal::SampleFormat::U16 => run::<u16>(&device, &config.into()),
+        cpal::SampleFormat::F32 => run::<f32>(&device, &config.into(), noise_type),
+        cpal::SampleFormat::I16 => run::<i16>(&device, &config.into(), noise_type),
+        cpal::SampleFormat::U16 => run::<u16>(&device, &config.into(), noise_type),
     })
 }
 
-fn run<T>(device: &cpal::Device, config: &cpal::StreamConfig) -> Stream
+fn run<T>(device: &cpal::Device, config: &cpal::StreamConfig, noise_type: NoiseType) -> Stream
 where
     T: cpal::Sample,
 {
@@ -82,7 +92,7 @@ where
     let stream = device
         .build_output_stream(
             config,
-            move |data: &mut [T], _| write_data(data, channels, &audio_processor2),
+            move |data: &mut [T], _| write_data(data, channels, &audio_processor2, noise_type),
             err_fn,
         )
         .unwrap();
@@ -90,13 +100,16 @@ where
     stream
 }
 
-fn write_data<T>(output: &mut [T], channels: usize, audio_processor: &AudioProcessorHandle)
+fn write_data<T>(output: &mut [T], channels: usize, audio_processor: &AudioProcessorHandle, noise_type: NoiseType)
 where
     T: cpal::Sample,
 {
     if let Ok(mut audio_processor) = audio_processor.try_lock() {
         for frame in output.chunks_mut(channels) {
-            let value: T = cpal::Sample::from::<f32>(&audio_processor.pink_noise());
+            let value: T = match noise_type {
+                NoiseType::White => cpal::Sample::from::<f32>(&audio_processor.white_noise()),
+                NoiseType::Pink => cpal::Sample::from::<f32>(&audio_processor.pink_noise()),
+            };
             for sample in frame.iter_mut() {
                 *sample = value;
             }
