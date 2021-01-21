@@ -81,7 +81,7 @@ fn run<T>(device: &cpal::Device, config: &cpal::StreamConfig, noise_type: NoiseT
 where
     T: cpal::Sample,
 {
-    let sample_rate = config.sample_rate.0 as f32;
+    let sample_rate = config.sample_rate.0;
     let channels = config.channels as usize;
 
     let audio_processor = Arc::new(Mutex::new(AudioProcessor::new(sample_rate)));

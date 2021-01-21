@@ -24,36 +24,23 @@ fn random_f32() -> f32 {
 }
 
 pub struct AudioProcessor {
-    pub fm: f32,
-    sample_clock: f32,
-    sample_rate: f32,
+    sample_clock: u32,
+    sample_rate: u32,
 }
 
 impl AudioProcessor {
-    pub fn new(sample_rate: f32) -> AudioProcessor {
+    pub fn new(sample_rate: u32) -> AudioProcessor {
         AudioProcessor {
-            fm: 20.0f32,
-            sample_clock: 0f32,
+            sample_clock: 0u32,
             sample_rate,
         }
     }
 
     fn increment_sample_clock(&mut self) {
-        self.sample_clock = (self.sample_clock + 1.0) % self.sample_rate;
-    }
-
-    pub fn sine(&mut self) -> f32 {
-        self.increment_sample_clock();
-
-        let sample =
-            (self.sample_clock * 440.0 * 2.0 * std::f32::consts::PI / self.sample_rate).sin();
-        // log!("sample: {}", sample);
-        sample
+        self.sample_clock = (self.sample_clock + 1) % self.sample_rate;
     }
 
     pub fn white_noise(&mut self) -> f32 {
-        self.increment_sample_clock();
-
         random_f32()
     }
 
