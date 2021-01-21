@@ -96,7 +96,7 @@ where
 {
     if let Ok(mut audio_processor) = audio_processor.try_lock() {
         for frame in output.chunks_mut(channels) {
-            let value: T = cpal::Sample::from::<f32>(&audio_processor.white_noise());
+            let value: T = cpal::Sample::from::<f32>(&audio_processor.pink_noise());
             for sample in frame.iter_mut() {
                 *sample = value;
             }
