@@ -66,7 +66,7 @@ fn get_config() -> (cpal::Device, cpal::SupportedStreamConfig) {
 pub fn play_noise(noise_type: String) -> Handle {
     let noise_type = convert_string_to_noise_type(noise_type);
 
-    // log!("playing noise type: {:?}", noise_type);
+    log!("playing noise type: {:?}", noise_type);
 
     let (device, config) = get_config();
 
