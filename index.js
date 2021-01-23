@@ -10,7 +10,8 @@ function createEventHandles(play_id, stop_id, rust_function, noiseType) {
     stop_button.addEventListener("click", event => {
         if (handle != null) {
             handle.free();
-	        handle = null;
+            handle = null;
+            console.log("stopping noise type:", noiseType);
         }
     });
 }

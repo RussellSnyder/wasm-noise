@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate more_asserts;
+
 mod audio_processor;
 
 use std::sync::Mutex;
@@ -84,7 +87,7 @@ where
     let sample_rate = config.sample_rate.0;
     let channels = config.channels as usize;
 
-    let audio_processor = Arc::new(Mutex::new(AudioProcessor::new(sample_rate)));
+    let audio_processor = Arc::new(Mutex::new(AudioProcessor::new(sample_rate as usize)));
     let audio_processor2 = audio_processor.clone();
 
     let err_fn = |err| console::error_1(&format!("an error occurred on stream: {}", err).into());
@@ -107,7 +110,7 @@ where
     if let Ok(mut audio_processor) = audio_processor.try_lock() {
         for frame in output.chunks_mut(channels) {
             let value: T = match noise_type {
-                NoiseType::White => cpal::Sample::from::<f32>(&audio_processor.white_noise()),
+                NoiseType::White => cpal::Sample::from::<f32>(&audio_processor.white_noise_alt()),
                 NoiseType::Pink => cpal::Sample::from::<f32>(&audio_processor.pink_noise()),
             };
             for sample in frame.iter_mut() {
