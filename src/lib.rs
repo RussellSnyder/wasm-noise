@@ -111,7 +111,7 @@ where
         for frame in output.chunks_mut(channels) {
             let value: T = match noise_type {
                 NoiseType::White => cpal::Sample::from::<f32>(&audio_processor.white_noise_alt()),
-                NoiseType::Pink => cpal::Sample::from::<f32>(&audio_processor.pink_noise()),
+                NoiseType::Pink => cpal::Sample::from::<f32>(&audio_processor.pink_noise_alt()),
             };
             for sample in frame.iter_mut() {
                 *sample = value;

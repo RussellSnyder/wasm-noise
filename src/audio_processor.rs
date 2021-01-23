@@ -89,7 +89,10 @@ fn random_f32() -> f32 {
 pub struct AudioProcessor {
     sample_clock: usize,
     sample_rate: usize,
-    element_a: NoiseElement,
+    white: NoiseElement,
+    pink_1: NoiseElement,
+    pink_2: NoiseElement,
+    pink_3: NoiseElement,
 }
 
 impl AudioProcessor {
@@ -97,7 +100,10 @@ impl AudioProcessor {
         AudioProcessor {
             sample_clock: 0,
             sample_rate,
-            element_a: NoiseElement::new(1, -1.0, 1.0, sample_rate),
+            white: NoiseElement::new(1, -1.0, 1.0, sample_rate),
+            pink_1: NoiseElement::new(500, -1.0, 1.0, sample_rate),
+            pink_2: NoiseElement::new(400, -0.3, 0.5, sample_rate),
+            pink_3: NoiseElement::new(300, -0.5, 0.3, sample_rate),
         }
     }
 
@@ -117,10 +123,17 @@ impl AudioProcessor {
 
     pub fn white_noise_alt(&mut self) -> f32 {
         self.increment_sample_clock();
-        // let range = Range::new(0.0, 1.0);
-        // let mut noise_element = NoiseElement::new(1, range, self.sample_rate);
-        // -1.0 and 1.0
-        self.element_a.next(self.sample_clock)
+        self.white.next(self.sample_clock)
+    }
+
+    pub fn pink_noise_alt(&mut self) -> f32 {
+        self.increment_sample_clock();
+
+        let pink_1 = self.pink_1.next(self.sample_clock);
+        let pink_2 = self.pink_2.next(self.sample_clock);
+        let pink_3 = self.pink_3.next(self.sample_clock);
+
+        return (pink_1 + pink_2 + pink_3) * (1.0/3.0)
     }
 
     // https://www.musicdsp.org/en/latest/Synthesis/244-direct-pink-noise-synthesis-with-auto-correlated-generator.html?highlight=pink%20noise
